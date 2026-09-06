@@ -1,9 +1,9 @@
-model_name_or_path: HuggingFaceTB/SmolLM2-135M-Instruct
+model_name_or_path: Qwen/Qwen2.5-0.5B-Instruct
 ref_model_name_or_path: null
 dataset_name: null
 dataset_split: train
-train_file: data/toy_preferences.jsonl
-output_dir: outputs/dpo
+train_file: data/math_preferences.jsonl
+output_dir: outputs/dpo-math
 seed: 42
 
 max_length: 512

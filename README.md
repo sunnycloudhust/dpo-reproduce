@@ -1,6 +1,6 @@
 # Preference Optimization Reproduction
 
-Repo nhỏ để reproduce và train preference optimization, bắt đầu với DPO trên Hugging Face TRL.
+Repo nhỏ để reproduce và train preference optimization cho bài toán toán học, bắt đầu với DPO trên Hugging Face TRL.
 
 ## Mục tiêu
 
@@ -29,7 +29,7 @@ pytest -q
 
 ## Train DPO
 
-Mặc định dùng model nhỏ để dễ thử; đổi `model_name_or_path` trong `configs/dpo.yaml` hoặc truyền CLI:
+Mặc định dùng `Qwen/Qwen2.5-0.5B-Instruct` và bộ preference toán local; đổi `model_name_or_path` trong `configs/dpo.yaml` hoặc truyền CLI:
 
 ```bash
 accelerate launch scripts/train_dpo.py --config configs/dpo.yaml
@@ -41,10 +41,14 @@ Ví dụ thay model và dataset:
 accelerate launch scripts/train_dpo.py \
   --config configs/dpo.yaml \
   --model-name-or-path Qwen/Qwen2.5-0.5B-Instruct \
-  --dataset-name username/dataset
+  --dataset-name HuggingFaceH4/ultrafeedback_binarized
 ```
 
 Dataset cần có ba cột chuẩn: `prompt`, `chosen`, `rejected`. Nếu dataset có format khác, chuẩn hóa ở `src/prepare_data.py` trước khi train.
+
+### Dùng dữ liệu toán lớn hơn
+
+`open-r1/OpenR1-Math-220k` là dataset lời giải để SFT, không phải preference pairs nên không thể đưa thẳng vào DPO. Với DPO, hãy tạo cặp lời giải đúng/sai bằng math verifier rồi lưu cùng schema `prompt`, `chosen`, `rejected`. Bộ local hiện tại chỉ là smoke dataset để kiểm tra pipeline, không đủ lớn để huấn luyện chất lượng cao.
 
 ## Đánh giá
 
