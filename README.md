@@ -29,7 +29,7 @@ pytest -q
 
 ## Train DPO
 
-Mặc định dùng `Qwen/Qwen2.5-0.5B-Instruct` và bộ preference toán local; đổi `model_name_or_path` trong `configs/dpo.yaml` hoặc truyền CLI:
+Mặc định dùng `Qwen/Qwen2.5-0.5B-Instruct` và bộ preference toán local; đổi `model_name` trong file config hoặc truyền CLI:
 
 ```bash
 accelerate launch scripts/train_dpo.py --config configs/dpo.yaml
@@ -52,7 +52,7 @@ Dataset cần có ba cột chuẩn: `prompt`, `chosen`, `rejected`. Nếu datase
 
 ## Train reward model trên Anthropic HH-RLHF
 
-Reward model dùng `distilbert-base-uncased` mặc định và tối ưu pairwise preference loss:
+Reward model dùng `Qwen/Qwen2.5-0.5B-Instruct` mặc định và tối ưu pairwise preference loss:
 `-log(sigmoid(score(chosen) - score(rejected)))`. Dataset `Anthropic/hh-rlhf` có sẵn hai cột `chosen` và `rejected`, nên không cần chuẩn hóa thêm.
 
 ```bash

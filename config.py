@@ -1,7 +1,7 @@
 CONFIG = {
     "dataset_name": "Anthropic/hh-rlhf",
     "dataset_config": None,
-    "model_name_or_path": "distilbert-base-uncased",
+    "model_name": "Qwen/Qwen2.5-0.5B-Instruct",
     "output_dir": "outputs/reward_model_hh_rlhf",
     "max_length": 512,
     "epochs": 1,

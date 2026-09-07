@@ -1,7 +1,7 @@
 from datasets import load_dataset
 from torch.utils.data import DataLoader
 
-
+# This function returns 2 datasets: train and test
 def load_preference_pairs(config):
     dataset = load_dataset(config["dataset_name"], config["dataset_config"])
     train = dataset["train"]
@@ -20,35 +20,51 @@ def load_preference_pairs(config):
     return train, evaluation
 
 
-def tokenize_pairs(dataset, tokenizer, max_length):
-    def tokenize(example):
-        chosen = tokenizer(example["chosen"], truncation=True, max_length=max_length)
-        rejected = tokenizer(example["rejected"], truncation=True, max_length=max_length)
-        return {
-            "chosen_input_ids": chosen["input_ids"],
-            "chosen_attention_mask": chosen["attention_mask"],
-            "rejected_input_ids": rejected["input_ids"],
-            "rejected_attention_mask": rejected["attention_mask"],
-        }
+def tokenize_example(example, tokenizer, max_length):
+    chosen = tokenizer(example["chosen"], truncation=True, max_length=max_length)
+    rejected = tokenizer(example["rejected"], truncation=True, max_length=max_length)
+    return {
+        "chosen_input_ids": chosen["input_ids"],
+        "chosen_attention_mask": chosen["attention_mask"],
+        "rejected_input_ids": rejected["input_ids"],
+        "rejected_attention_mask": rejected["attention_mask"],
+    }
 
-    return dataset.map(tokenize, remove_columns=dataset.column_names)
+
+def tokenize_pairs(dataset, tokenizer, max_length):
+    return dataset.map(
+        tokenize_example,
+        fn_kwargs={"tokenizer": tokenizer, "max_length": max_length},
+        remove_columns=dataset.column_names,
+    )
+
+
+def pad_batch(batch, tokenizer, prefix):
+    return tokenizer.pad(
+        {
+            "input_ids": [item[f"{prefix}_input_ids"] for item in batch],
+            "attention_mask": [item[f"{prefix}_attention_mask"] for item in batch],
+        },
+        return_tensors="pt",
+    )
 
 
 def collate_pairs(batch, tokenizer):
-    def pad(prefix):
-        return tokenizer.pad(
-            {
-                "input_ids": [item[f"{prefix}_input_ids"] for item in batch],
-                "attention_mask": [item[f"{prefix}_attention_mask"] for item in batch],
-            },
-            return_tensors="pt",
-        )
+    chosen = pad_batch(batch, tokenizer, "chosen")
+    rejected = pad_batch(batch, tokenizer, "rejected")
+    return {"chosen": chosen, "rejected": rejected}
 
-    return {"chosen": pad("chosen"), "rejected": pad("rejected")}
+
+class PairCollator:
+    def __init__(self, tokenizer):
+        self.tokenizer = tokenizer
+
+    def __call__(self, batch):
+        return collate_pairs(batch, self.tokenizer)
 
 
 def make_loaders(train, evaluation, tokenizer, batch_size):
-    collate = lambda batch: collate_pairs(batch, tokenizer)
+    collate = PairCollator(tokenizer)
     train_loader = DataLoader(train, batch_size=batch_size, shuffle=True, collate_fn=collate)
     eval_loader = DataLoader(evaluation, batch_size=batch_size, shuffle=False, collate_fn=collate)
     return train_loader, eval_loader

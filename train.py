@@ -1,8 +1,6 @@
 import json
-import random
 from pathlib import Path
 
-import numpy as np
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
@@ -11,22 +9,13 @@ from engine import run_epoch
 from config import CONFIG
 
 
-def set_seed(seed):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
-
-
 def main():
     config = CONFIG
-    set_seed(config["seed"])
     output_dir = Path(config["output_dir"])
     output_dir.mkdir(parents=True, exist_ok=True)
 
     train, evaluation = load_preference_pairs(config)
-    tokenizer = AutoTokenizer.from_pretrained(config["model_name_or_path"])
+    tokenizer = AutoTokenizer.from_pretrained(config["model_name"])
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     train = tokenize_pairs(train, tokenizer, config["max_length"])
@@ -37,7 +26,7 @@ def main():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = AutoModelForSequenceClassification.from_pretrained(
-        config["model_name_or_path"], num_labels=1
+        config["model_name"], num_labels=1
     ).to(device)
     model.config.pad_token_id = tokenizer.pad_token_id
     optimizer = torch.optim.AdamW(
@@ -72,7 +61,7 @@ def main():
     tokenizer.save_pretrained(output_dir)
     summary = {
         "dataset": config["dataset_name"],
-        "model": config["model_name_or_path"],
+        "model": config["model_name"],
         "device": str(device),
         "train_pairs": len(train),
         "eval_pairs": len(evaluation),
