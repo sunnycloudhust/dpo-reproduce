@@ -3,18 +3,20 @@ from torch.utils.data import DataLoader
 
 
 def load_preference_pairs(config):
-    dataset = load_dataset(config.dataset_name, config.dataset_config)
+    dataset = load_dataset(config["dataset_name"], config["dataset_config"])
     train = dataset["train"]
     required = {"chosen", "rejected"}
     if not required.issubset(train.column_names):
         raise ValueError(f"Dataset must contain {sorted(required)}; got {train.column_names}")
 
-    split = train.train_test_split(test_size=config.eval_ratio, seed=config.seed)
+    split = train.train_test_split(
+        test_size=config["eval_ratio"], seed=config["seed"]
+    )
     train, evaluation = split["train"], split["test"]
-    if config.max_train_samples:
-        train = train.select(range(min(config.max_train_samples, len(train))))
-    if config.max_eval_samples:
-        evaluation = evaluation.select(range(min(config.max_eval_samples, len(evaluation))))
+    if config["max_train_samples"]:
+        train = train.select(range(min(config["max_train_samples"], len(train))))
+    if config["max_eval_samples"]:
+        evaluation = evaluation.select(range(min(config["max_eval_samples"], len(evaluation))))
     return train, evaluation
 
 
