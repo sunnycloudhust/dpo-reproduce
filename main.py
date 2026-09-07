@@ -25,15 +25,24 @@ def main():
         train_dataset, eval_dataset, tokenizer, config["batch_size"]
     )
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    gpu_ids = config["gpu_ids"] if device.type == "cuda" else []
+    if gpu_ids and max(gpu_ids) >= torch.cuda.device_count():
+        raise ValueError(
+            f"Requested GPU ids {gpu_ids}, but only {torch.cuda.device_count()} "
+            "CUDA device(s) are available."
+        )
     print(
-        f"Using device={device}, train_pairs={len(train_dataset)}, "
+        f"Using device={device}, gpu_ids={gpu_ids or 'cpu'}, "
+        f"train_pairs={len(train_dataset)}, "
         f"eval_pairs={len(eval_dataset)}"
     )
     model = AutoModelForSequenceClassification.from_pretrained(
         config["reward_model_name"], num_labels=1
     ).to(device)
     model.config.pad_token_id = tokenizer.pad_token_id
+    if len(gpu_ids) > 1:
+        model = torch.nn.DataParallel(model, device_ids=gpu_ids)
 
     optimizer = torch.optim.AdamW(
         model.parameters(),
@@ -43,7 +52,8 @@ def main():
 
     history = train(model, train_loader, eval_loader, optimizer, device, config)
 
-    model.save_pretrained(output_dir)
+    model_to_save = model.module if isinstance(model, torch.nn.DataParallel) else model
+    model_to_save.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
     summary = {
         "dataset": config["dataset_name"],

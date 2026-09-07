@@ -65,7 +65,15 @@ python main.py
 
 Mọi tham số nằm trong `config.py`. Để chạy smoke test nhanh, đổi `max_train_samples` thành `1000`, `max_eval_samples` thành `200` và `max_test_samples` thành `200`. Script lưu checkpoint tokenizer/model và `metrics.json`, trong đó có `eval.loss` và `eval.accuracy`.
 
-Config mặc định đã dùng `batch_size: 1`, gradient accumulation và sequence length 256 để phù hợp GPU khoảng 14 GB. Nếu vẫn hết VRAM, giảm `max_length` xuống 128 và kiểm tra process cũ bằng `nvidia-smi`.
+Config mặc định dùng hai GPU (`gpu_ids: [0, 1]`), `batch_size: 2`, gradient accumulation và sequence length 256. Nếu vẫn hết VRAM, giảm `max_length` xuống 128, giảm `batch_size` xuống 1 (khi đó hai GPU không được tận dụng đều), và kiểm tra process cũ bằng `nvidia-smi`.
+
+Chạy training bằng:
+
+```bash
+python main.py
+```
+
+Model được phân phối qua hai GPU bằng `DataParallel` và checkpoint được lưu ở dạng model bình thường để `experiment.py` load lại được.
 
 Training in progress và metrics từng epoch ra terminal; metrics tổng hợp được lưu tại `outputs/reward_model_hh_rlhf/metrics.json`. Logic train nằm trong `train.py`, còn entry point chạy train nằm trong `main.py`.
 
