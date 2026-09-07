@@ -103,18 +103,21 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
     print(f"Starting reward-model training with {config['model_name']}")
 
-    train, evaluation = load_preference_pairs(config)
+    train_dataset, eval_dataset = load_preference_pairs(config)
     tokenizer = AutoTokenizer.from_pretrained(config["model_name"])
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    train = tokenize_pairs(train, tokenizer, config["max_length"])
-    evaluation = tokenize_pairs(evaluation, tokenizer, config["max_length"])
+    train_dataset = tokenize_pairs(train_dataset, tokenizer, config["max_length"])
+    eval_dataset = tokenize_pairs(eval_dataset, tokenizer, config["max_length"])
     train_loader, eval_loader = make_loaders(
-        train, evaluation, tokenizer, config["batch_size"]
+        train_dataset, eval_dataset, tokenizer, config["batch_size"]
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device={device}, train_pairs={len(train)}, eval_pairs={len(evaluation)}")
+    print(
+        f"Using device={device}, train_pairs={len(train_dataset)}, "
+        f"eval_pairs={len(eval_dataset)}"
+    )
     model_dtype = None
     if device.type == "cuda" and config["mixed_precision"]:
         model_dtype = (
@@ -141,8 +144,8 @@ def main():
         "dataset": config["dataset_name"],
         "model": config["model_name"],
         "device": str(device),
-        "train_pairs": len(train),
-        "eval_pairs": len(evaluation),
+        "train_pairs": len(train_dataset),
+        "eval_pairs": len(eval_dataset),
         "seed": config["seed"],
         "history": history,
     }
