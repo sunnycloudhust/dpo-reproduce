@@ -65,7 +65,9 @@ python train.py
 
 Mọi tham số nằm trong `config.py`. Để chạy smoke test nhanh, đổi `max_train_samples` thành `1000` và `max_eval_samples` thành `200` trong file config. Script lưu checkpoint tokenizer/model và `metrics.json`, trong đó có `eval.loss` và `eval.accuracy`.
 
-Config mặc định đã dùng `batch_size: 1`, gradient accumulation, sequence length 256, mixed precision và gradient checkpointing để phù hợp GPU khoảng 14 GB. Nếu vẫn hết VRAM, giảm `max_length` xuống 128 và kiểm tra process cũ bằng `nvidia-smi`; có thể chạy với `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python train.py`.
+Config mặc định đã dùng `batch_size: 1`, gradient accumulation và sequence length 256 để phù hợp GPU khoảng 14 GB. Nếu vẫn hết VRAM, giảm `max_length` xuống 128 và kiểm tra process cũ bằng `nvidia-smi`; có thể chạy với `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python train.py`.
+
+Training in progress và metrics từng epoch ra terminal; metrics tổng hợp được lưu tại `outputs/reward_model_hh_rlhf/metrics.json`.
 
 ## Đánh giá
 

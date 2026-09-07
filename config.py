@@ -9,7 +9,6 @@ CONFIG = {
     "weight_decay": 0.01,
     "batch_size": 1,
     "gradient_accumulation_steps": 8,
-    "gradient_checkpointing": True,
     "mixed_precision": True,
     "eval_ratio": 0.02,
     "max_train_samples": None,

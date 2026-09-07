@@ -13,6 +13,7 @@ def main():
     config = CONFIG
     output_dir = Path(config["output_dir"])
     output_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Starting reward-model training with {config['model_name']}")
 
     train, evaluation = load_preference_pairs(config)
     tokenizer = AutoTokenizer.from_pretrained(config["model_name"])
@@ -25,6 +26,7 @@ def main():
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device={device}, train_pairs={len(train)}, eval_pairs={len(evaluation)}")
     model_dtype = None
     if device.type == "cuda" and config["mixed_precision"]:
         model_dtype = (
@@ -36,13 +38,7 @@ def main():
         config["model_name"], num_labels=1, torch_dtype=model_dtype
     ).to(device)
     model.config.pad_token_id = tokenizer.pad_token_id
-    
-    if config["gradient_checkpointing"]:
-        model.gradient_checkpointing_enable()
-        model.config.use_cache = False
-        if hasattr(model, "enable_input_require_grads"):
-            model.enable_input_require_grads()
-    
+
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=config["learning_rate"],
@@ -69,7 +65,13 @@ def main():
         )
         metrics = {"epoch": epoch + 1, "train": train_metrics, "eval": eval_metrics}
         history.append(metrics)
-        print(json.dumps(metrics))
+        print(
+            f"Epoch {epoch + 1}/{config['epochs']} | "
+            f"train_loss={train_metrics['loss']:.4f} | "
+            f"train_accuracy={train_metrics['accuracy']:.4f} | "
+            f"eval_loss={eval_metrics['loss']:.4f} | "
+            f"eval_accuracy={eval_metrics['accuracy']:.4f}"
+        )
 
     model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
@@ -83,6 +85,7 @@ def main():
         "history": history,
     }
     (output_dir / "metrics.json").write_text(json.dumps(summary, indent=2) + "\n")
+    print(f"Training complete; metrics saved to {output_dir / 'metrics.json'}")
 
 
 if __name__ == "__main__":
