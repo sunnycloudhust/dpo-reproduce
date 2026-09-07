@@ -1,3 +1,5 @@
+from contextlib import nullcontext
+
 import torch
 
 from loss import pairwise_preference_loss, score
@@ -9,8 +11,15 @@ def run_epoch(model, loader, optimizer, device, accumulation_steps, training):
     total_correct = 0
     total_pairs = 0
     context = torch.enable_grad() if training else torch.no_grad()
+    autocast_context = (
+        torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+        if device.type == "cuda" and next(model.parameters()).dtype == torch.bfloat16
+        else torch.autocast(device_type="cuda", dtype=torch.float16)
+        if device.type == "cuda" and next(model.parameters()).dtype == torch.float16
+        else nullcontext()
+    )
 
-    with context:
+    with context, autocast_context:
         for step, batch in enumerate(loader):
             chosen = {key: value.to(device) for key, value in batch["chosen"].items()}
             rejected = {key: value.to(device) for key, value in batch["rejected"].items()}

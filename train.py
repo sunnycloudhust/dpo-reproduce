@@ -25,10 +25,24 @@ def main():
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model_dtype = None
+    if device.type == "cuda" and config["mixed_precision"]:
+        model_dtype = (
+            torch.bfloat16
+            if torch.cuda.is_bf16_supported()
+            else torch.float16
+        )
     model = AutoModelForSequenceClassification.from_pretrained(
-        config["model_name"], num_labels=1
+        config["model_name"], num_labels=1, torch_dtype=model_dtype
     ).to(device)
     model.config.pad_token_id = tokenizer.pad_token_id
+    
+    if config["gradient_checkpointing"]:
+        model.gradient_checkpointing_enable()
+        model.config.use_cache = False
+        if hasattr(model, "enable_input_require_grads"):
+            model.enable_input_require_grads()
+    
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=config["learning_rate"],
