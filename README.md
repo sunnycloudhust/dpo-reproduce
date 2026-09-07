@@ -63,7 +63,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Mọi tham số nằm trong `config.py`. Để chạy smoke test nhanh, đổi `max_train_samples` thành `1000` và `max_eval_samples` thành `200` trong file config. Script lưu checkpoint tokenizer/model và `metrics.json`, trong đó có `eval.loss` và `eval.accuracy`.
+Mọi tham số nằm trong `config.py`. Để chạy smoke test nhanh, đổi `max_train_samples` thành `1000`, `max_eval_samples` thành `200` và `max_test_samples` thành `200`. Script lưu checkpoint tokenizer/model và `metrics.json`, trong đó có `eval.loss` và `eval.accuracy`.
 
 Config mặc định đã dùng `batch_size: 1`, gradient accumulation và sequence length 256 để phù hợp GPU khoảng 14 GB. Nếu vẫn hết VRAM, giảm `max_length` xuống 128 và kiểm tra process cũ bằng `nvidia-smi`.
 
@@ -80,7 +80,7 @@ python experiment.py \
   --output outputs/test_time_alignment/results.json
 ```
 
-Experiment dùng cùng một pool response được sinh bởi base model và lấy prefix cho `N = 1, 2, 4, 8`. Reward model chấm từng response, sau đó chọn response có reward cao nhất. Kết quả lưu toàn bộ prompt, candidate, reward, response baseline và response được chọn trong `results.json`.
+Experiment dùng test split riêng, cùng một pool response được sinh bởi base model và lấy prefix cho `N = 1, 2, 4, 8`. Reward model chấm từng response, sau đó chọn response có reward cao nhất. Kết quả lưu toàn bộ prompt, candidate, reward, response baseline và response được chọn trong `results.json`.
 
 Đây là phần đo reward-model selection, chưa phải đánh giá chất lượng độc lập. Cần dùng human evaluation hoặc một judge model cố định để đo win-rate của baseline và response được chọn; không nên dùng chính reward model làm ground truth.
 
@@ -108,7 +108,5 @@ src/            Code chuẩn hóa dữ liệu và tiện ích
 ## Reproducibility checklist
 
 - Ghi lại commit, config, model revision và dataset revision.
-- Đặt seed cố định khi so sánh các run.
 - So sánh cùng split và cùng max sequence length.
 - Theo dõi `loss`, `rewards/chosen`, `rewards/rejected`, `rewards/margins`.
-- Dùng nhiều seed trước khi kết luận.

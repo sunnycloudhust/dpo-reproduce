@@ -15,7 +15,7 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
     print(f"Starting reward-model training with {config['reward_model_name']}")
 
-    train_dataset, eval_dataset = load_preference_pairs(config)
+    train_dataset, eval_dataset, _ = load_preference_pairs(config)
     tokenizer = AutoTokenizer.from_pretrained(config["reward_model_name"])
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -51,7 +51,6 @@ def main():
         "device": str(device),
         "train_pairs": len(train_dataset),
         "eval_pairs": len(eval_dataset),
-        "seed": config["seed"],
         "history": history,
     }
     (output_dir / "metrics.json").write_text(json.dumps(summary, indent=2) + "\n")
