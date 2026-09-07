@@ -11,7 +11,7 @@ CONFIG = {
     "gradient_accumulation_steps": 8,
     "mixed_precision": True,
     "eval_ratio": 0.02,
-    "max_train_samples": None,
+    "max_train_samples": 10000,
     "max_eval_samples": None,
     "seed": 42,
 }
