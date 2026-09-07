@@ -56,14 +56,14 @@ Reward model dùng `distilbert-base-uncased` mặc định và tối ưu pairwis
 `-log(sigmoid(score(chosen) - score(rejected)))`. Dataset `Anthropic/hh-rlhf` có sẵn hai cột `chosen` và `rejected`, nên không cần chuẩn hóa thêm.
 
 ```bash
-pip install -r requirements-reward-model.txt
+pip install -r requirements.txt
 ```
 
 ```bash
-python train_reward_model.py
+python train.py
 ```
 
-Mọi tham số nằm trong `reward_model_config.py`. Để chạy smoke test nhanh, đổi `max_train_samples` thành `1000` và `max_eval_samples` thành `200` trong file config. Script lưu checkpoint tokenizer/model và `metrics.json`, trong đó có `eval.loss` và `eval.accuracy`.
+Mọi tham số nằm trong `config.py`. Để chạy smoke test nhanh, đổi `max_train_samples` thành `1000` và `max_eval_samples` thành `200` trong file config. Script lưu checkpoint tokenizer/model và `metrics.json`, trong đó có `eval.loss` và `eval.accuracy`.
 
 ## Đánh giá
 
