@@ -1,3 +1,0 @@
-{"prompt":"What is a concise definition of overfitting?","chosen":"Overfitting is when a model memorizes training examples and performs poorly on new data.","rejected":"Overfitting means the model is always too small to learn anything."}
-{"prompt":"Why do we use a validation set?","chosen":"A validation set helps select settings and detect generalization problems without using the test set.","rejected":"A validation set is only needed because training data cannot be stored."}
-{"prompt":"Give one safe password practice.","chosen":"Use a unique, long password for each service and store it in a reputable password manager.","rejected":"Reuse one short password everywhere so it is easier to remember."}
