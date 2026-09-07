@@ -50,6 +50,21 @@ Dataset cần có ba cột chuẩn: `prompt`, `chosen`, `rejected`. Nếu datase
 
 `open-r1/OpenR1-Math-220k` là dataset lời giải để SFT, không phải preference pairs nên không thể đưa thẳng vào DPO. Với DPO, hãy tạo cặp lời giải đúng/sai bằng math verifier rồi lưu cùng schema `prompt`, `chosen`, `rejected`. Bộ local hiện tại chỉ là smoke dataset để kiểm tra pipeline, không đủ lớn để huấn luyện chất lượng cao.
 
+## Train reward model trên Anthropic HH-RLHF
+
+Reward model dùng `distilbert-base-uncased` mặc định và tối ưu pairwise preference loss:
+`-log(sigmoid(score(chosen) - score(rejected)))`. Dataset `Anthropic/hh-rlhf` có sẵn hai cột `chosen` và `rejected`, nên không cần chuẩn hóa thêm.
+
+```bash
+pip install -r requirements-reward-model.txt
+```
+
+```bash
+python train_reward_model.py
+```
+
+Mọi tham số nằm trong `reward_model_config.py`. Để chạy smoke test nhanh, đổi `max_train_samples` thành `1000` và `max_eval_samples` thành `200` trong file config. Script lưu checkpoint tokenizer/model và `metrics.json`, trong đó có `eval.loss` và `eval.accuracy`.
+
 ## Đánh giá
 
 ```bash
