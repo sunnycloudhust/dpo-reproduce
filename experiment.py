@@ -1,6 +1,4 @@
-import argparse
 import json
-import random
 from pathlib import Path
 
 import torch
@@ -16,13 +14,6 @@ def extract_prompt(conversation):
     if marker not in conversation:
         return conversation
     return conversation.rsplit(marker, 1)[0] + marker
-
-
-def set_seed(seed):
-    random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
 
 
 def score_texts(model, tokenizer, texts, device, max_length):
@@ -63,9 +54,8 @@ def generate_candidates(model, tokenizer, prompt, count, config, device):
 
 
 def run_experiment(config, reward_model_path, base_model_name, max_prompts, output_path):
-    set_seed(config["seed"])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    _, evaluation = load_preference_pairs(config)
+    _, _, evaluation = load_preference_pairs(config)
     if max_prompts is not None:
         evaluation = evaluation.select(range(min(max_prompts, len(evaluation))))
 
@@ -158,24 +148,11 @@ def run_experiment(config, reward_model_path, base_model_name, max_prompts, outp
     print(f"Experiment results saved to {output_path}")
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Run test-time reward reranking.")
-    parser.add_argument("--reward-model", default=CONFIG["output_dir"])
-    parser.add_argument("--base-model", default=CONFIG["base_model_name"])
-    parser.add_argument("--max-prompts", type=int, default=CONFIG["max_eval_samples"])
-    parser.add_argument(
-        "--output",
-        default=str(Path(CONFIG["experiment_output_dir"]) / "results.json"),
-    )
-    return parser.parse_args()
-
-
 if __name__ == "__main__":
-    args = parse_args()
     run_experiment(
         CONFIG,
-        Path(args.reward_model),
-        args.base_model,
-        args.max_prompts,
-        Path(args.output),
+        Path(CONFIG["output_dir"]),
+        CONFIG["base_model_name"],
+        CONFIG["max_test_samples"],
+        Path(CONFIG["experiment_output_dir"]) / "results.json",
     )
