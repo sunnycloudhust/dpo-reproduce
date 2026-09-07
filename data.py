@@ -1,28 +1,41 @@
 from datasets import load_dataset
 from torch.utils.data import DataLoader
 
-# This function returns 2 datasets: train and test
 def load_preference_pairs(config):
+    """
+        This function loads the dataset and devides into train/val/test
+    """
+    
     dataset = load_dataset(config["dataset_name"], config["dataset_config"])
     train = dataset["train"]
     required = {"chosen", "rejected"}
     if not required.issubset(train.column_names):
         raise ValueError(f"Dataset must contain {sorted(required)}; got {train.column_names}")
 
-    split = train.train_test_split(
-        test_size=config["eval_ratio"], seed=config["seed"]
+    heldout_ratio = config["eval_ratio"] + config["test_ratio"]
+    split = train.train_test_split(test_size=heldout_ratio)
+    heldout = split["test"].train_test_split(
+        test_size=config["test_ratio"] / heldout_ratio,
     )
-    train, evaluation = split["train"], split["test"]
+    train, evaluation, test = (
+        split["train"],
+        heldout["train"],
+        heldout["test"],
+    )
+    # Check number of samples (not necessary)
     if config["max_train_samples"]:
         train = train.select(range(min(config["max_train_samples"], len(train))))
     if config["max_eval_samples"]:
         evaluation = evaluation.select(range(min(config["max_eval_samples"], len(evaluation))))
-    return train, evaluation
+    if config["max_test_samples"]:
+        test = test.select(range(min(config["max_test_samples"], len(test))))
+    return train, evaluation, test
 
 
 def tokenize_example(example, tokenizer, max_length):
     chosen = tokenizer(example["chosen"], truncation=True, max_length=max_length)
     rejected = tokenizer(example["rejected"], truncation=True, max_length=max_length)
+    
     return {
         "chosen_input_ids": chosen["input_ids"],
         "chosen_attention_mask": chosen["attention_mask"],
