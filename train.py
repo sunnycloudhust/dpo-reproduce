@@ -6,9 +6,9 @@ import numpy as np
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from reward_data import load_preference_pairs, make_loaders, tokenize_pairs
-from reward_engine import run_epoch
-from reward_model_config import load_config
+from data import load_preference_pairs, make_loaders, tokenize_pairs
+from engine import run_epoch
+from config import load_config
 
 
 def set_seed(seed):
