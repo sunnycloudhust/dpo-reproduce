@@ -1,6 +1,6 @@
 import torch
 
-from reward_loss import pairwise_preference_loss, score
+from loss import pairwise_preference_loss, score
 
 
 def run_epoch(model, loader, optimizer, device, accumulation_steps, training):
