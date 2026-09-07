@@ -29,7 +29,7 @@ pytest -q
 
 ## Train DPO
 
-Mặc định dùng `Qwen/Qwen2.5-0.5B-Instruct` và bộ preference toán local; đổi `model_name` trong file config hoặc truyền CLI:
+Mặc định dùng base model `Qwen/Qwen2.5-1.5B-Instruct`, reward model `Qwen/Qwen2.5-0.5B-Instruct` và bộ preference toán local. Đổi các model trong `config.py` nếu cần:
 
 ```bash
 accelerate launch scripts/train_dpo.py --config configs/dpo.yaml
@@ -60,14 +60,29 @@ pip install -r requirements.txt
 ```
 
 ```bash
-python train.py
+python main.py
 ```
 
 Mọi tham số nằm trong `config.py`. Để chạy smoke test nhanh, đổi `max_train_samples` thành `1000` và `max_eval_samples` thành `200` trong file config. Script lưu checkpoint tokenizer/model và `metrics.json`, trong đó có `eval.loss` và `eval.accuracy`.
 
-Config mặc định đã dùng `batch_size: 1`, gradient accumulation và sequence length 256 để phù hợp GPU khoảng 14 GB. Nếu vẫn hết VRAM, giảm `max_length` xuống 128 và kiểm tra process cũ bằng `nvidia-smi`; có thể chạy với `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python train.py`.
+Config mặc định đã dùng `batch_size: 1`, gradient accumulation và sequence length 256 để phù hợp GPU khoảng 14 GB. Nếu vẫn hết VRAM, giảm `max_length` xuống 128 và kiểm tra process cũ bằng `nvidia-smi`.
 
-Training in progress và metrics từng epoch ra terminal; metrics tổng hợp được lưu tại `outputs/reward_model_hh_rlhf/metrics.json`.
+Training in progress và metrics từng epoch ra terminal; metrics tổng hợp được lưu tại `outputs/reward_model_hh_rlhf/metrics.json`. Logic train nằm trong `train.py`, còn entry point chạy train nằm trong `main.py`.
+
+## Test-time alignment với Best-of-N
+
+Sau khi train reward model, chạy experiment:
+
+```bash
+python experiment.py \
+  --reward-model outputs/reward_model_hh_rlhf \
+  --max-prompts 100 \
+  --output outputs/test_time_alignment/results.json
+```
+
+Experiment dùng cùng một pool response được sinh bởi base model và lấy prefix cho `N = 1, 2, 4, 8`. Reward model chấm từng response, sau đó chọn response có reward cao nhất. Kết quả lưu toàn bộ prompt, candidate, reward, response baseline và response được chọn trong `results.json`.
+
+Đây là phần đo reward-model selection, chưa phải đánh giá chất lượng độc lập. Cần dùng human evaluation hoặc một judge model cố định để đo win-rate của baseline và response được chọn; không nên dùng chính reward model làm ground truth.
 
 ## Đánh giá
 
