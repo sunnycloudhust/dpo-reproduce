@@ -77,6 +77,17 @@ Model được phân phối qua hai GPU bằng `DataParallel` và checkpoint đ�
 
 Training in progress và metrics từng epoch ra terminal; metrics tổng hợp được lưu tại `outputs/reward_model_hh_rlhf/metrics.json`. Logic train nằm trong `train.py`, còn entry point chạy train nằm trong `main.py`.
 
+### Kết quả train reward model
+
+Kết quả dưới đây được ghi lại từ lần train trên `Anthropic/hh-rlhf` với `Qwen/Qwen2.5-0.5B-Instruct`, sử dụng 25.000 cặp train, 16.080 cặp evaluation và 2 epoch:
+
+| Epoch | Train loss | Train accuracy | Eval loss | Eval accuracy |
+|---:|---:|---:|---:|---:|
+| 1 | 0.6939 | 47.72% | 0.6443 | 51.56% |
+| 2 | 0.5761 | 58.45% | 0.6606 | 52.43% |
+
+`Accuracy` là tỷ lệ model chấm phản hồi `chosen` cao hơn phản hồi `rejected`. Eval accuracy cuối cùng là 52.43%, gần mức ngẫu nhiên, vì vậy checkpoint này chỉ nên được xem là kết quả thử nghiệm và chưa nên dùng làm reward model production. Model checkpoint và Model Card được phát hành tại [Hugging Face](https://huggingface.co/sunnycloudhust/reward-model-hh-rlhf).
+
 ## Test-time alignment với Best-of-N
 
 Sau khi train reward model, chạy experiment:
