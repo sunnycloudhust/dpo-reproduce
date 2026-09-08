@@ -55,6 +55,20 @@ python experiment.py \
 
 The experiment generates candidate responses with a base model, scores them with the reward model, and selects the highest-scoring response for `N = 1, 2, 4, 8`. The output contains prompts, candidates, scores, baseline responses, and selected responses.
 
+Verified test-time alignment run from `outputs/test_time_alignment/results.json`:
+
+- Base model: `Qwen/Qwen2.5-1.5B-Instruct`
+- Reward model: `sunnycloudhust/reward-model-hh-rlhf`
+- Device: `cuda`
+- Number of prompts: `50`
+- Candidate counts: `1, 2, 4`
+
+| Setting | Mean selected reward | Baseline mean reward |
+|---:|---:|---:|
+| N = 1 | 2.7805 | 3.3282 |
+| N = 2 | 3.3549 | 3.3282 |
+| N = 4 | 3.6848 | 3.3282 |
+
 This measures reward-model selection rather than independent response quality. Use human evaluation or a fixed external judge to estimate win rate; the reward model itself should not be treated as ground truth.
 
 ## Files
