@@ -30,8 +30,8 @@ def train(model, train_loader, eval_loader, optimizer, device, config):
             train_pairs += pair_count
             print(
                 f"Epoch {epoch + 1}/{config['epochs']} | "
-                f"train step {step + 1}/{len(train_loader)} | "
-                f"loss={loss.item():.4f}"
+                f"Train step {step + 1}/{len(train_loader)} | "
+                f"Loss={loss.item():.4f}"
             )
 
         model.eval()
@@ -51,7 +51,7 @@ def train(model, train_loader, eval_loader, optimizer, device, config):
                 eval_pairs += pair_count
                 print(
                     f"Epoch {epoch + 1}/{config['epochs']} | "
-                    f"eval step {step + 1}/{len(eval_loader)} | "
+                    f"Eval step {step + 1}/{len(eval_loader)} | "
                     f"loss={loss.item():.4f}"
                 )
 
