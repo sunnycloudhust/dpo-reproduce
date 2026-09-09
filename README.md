@@ -1,6 +1,6 @@
-# Preference Optimization Reproduction
+# Weak-to-strong generalization
 
-This repository contains a small research pipeline for preference optimization. It currently includes reward-model training on Anthropic HH-RLHF, best-of-N test-time selection, and a DPO-oriented project layout.
+We train Reward Model `Qwen/Qwen2.5-0.5B-Instruct`on dataset `Anthropic/hh-rlhf`
 
 ## Reward Model Results
 
@@ -8,10 +8,10 @@ The current reward-model checkpoint was trained from `Qwen/Qwen2.5-0.5B-Instruct
 
 | Epoch | Train loss | Train accuracy | Eval loss | Eval accuracy |
 |---:|---:|---:|---:|---:|
-| 1 | 0.6939 | 47.72% | 0.6443 | 51.56% |
-| 2 | 0.5761 | 58.45% | 0.6606 | 52.43% |
+| 1 | 0.6956 | 48.51% | 0.6392 | 51.98% |
+| 2 | 0.5828 | 58.00% | 0.6463 | 52.77% |
 
-Accuracy is the fraction of pairs for which the model scores `chosen` higher than `rejected`. The final evaluation accuracy is 52.43%, which is close to random performance. This checkpoint is therefore experimental and is not intended for production use without further validation.
+Accuracy is the fraction of pairs for which the model scores `chosen` higher than `rejected`. The final evaluation accuracy is 52.77%, which is still close to random performance. This checkpoint is therefore experimental and is not intended for production use without further validation.
 
 The checkpoint and its Model Card are available on [Hugging Face](https://huggingface.co/sunnycloudhust/reward-model-hh-rlhf). The raw metrics are stored in `outputs/reward_model_hh_rlhf/metrics.json`.
 
@@ -53,7 +53,7 @@ python experiment.py \
   --output outputs/test_time_alignment/results.json
 ```
 
-The experiment generates candidate responses with a base model, scores them with the reward model, and selects the highest-scoring response for `N = 1, 2, 4, 8`. The output contains prompts, candidates, scores, baseline responses, and selected responses.
+The experiment generates candidate responses with a base model, scores them with the reward model, and selects the highest-scoring response for `N = 1, 2, 4`. The output contains prompts, candidates, scores, baseline responses, and selected responses.
 
 Verified test-time alignment run from `outputs/test_time_alignment/results.json`:
 
@@ -71,20 +71,4 @@ Verified test-time alignment run from `outputs/test_time_alignment/results.json`
 
 This measures reward-model selection rather than independent response quality. Use human evaluation or a fixed external judge to estimate win rate; the reward model itself should not be treated as ground truth.
 
-## Files
 
-```text
-config.py       Training and experiment settings
-data.py         Preference dataset loading
-loss.py         Pairwise preference loss
-train.py        Training loop
-main.py         Reward-model training entry point
-experiment.py   Best-of-N test-time experiment
-outputs/        Checkpoints, metrics, and experiment results
-```
-
-## Reproducibility Checklist
-
-- Record the commit, configuration, model revision, and dataset revision.
-- Use the same split and maximum sequence length for comparisons.
-- Track loss, chosen/rejected rewards, and reward margins.
